@@ -18,6 +18,15 @@ public class TestController {
         return "Second message from AWS Ecs";
     }
 
+    // Endpoint que retorna un mensaje OK y código 200 en formato JSON
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> getStatusOk() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "ok");
+        response.put("code", 200);
+        return ResponseEntity.ok(response);
+    }
+
 
     @GetMapping("/prueba")
     public String getPrueba() {
