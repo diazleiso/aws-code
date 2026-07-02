@@ -1,11 +1,11 @@
-# Imagen base oficial de AWS sobre Alpine (Evita el bloqueo de límites de Docker Hub)
-FROM public.ecr.aws/amazoncorretto/amazoncorretto:17-alpine
+# Imagen base oficial de AWS (Amazon Linux 2023) — tag confirmado estable en public ECR
+FROM public.ecr.aws/amazoncorretto/amazoncorretto:17
 
-RUN apk add --no-cache curl
+RUN yum install -y curl && yum clean all
+
 VOLUME /tmp
 EXPOSE 8080
 
 # Nombre unificado con el buildspec.yml
 ADD target/springboot-aws-deploy.jar springboot-aws-deploy.jar
-
 ENTRYPOINT ["java","-jar","/springboot-aws-deploy.jar"]
