@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class TestController {
     @GetMapping("/data")
     public String getData() {
-        return "First message from AWS Ecs";
+        return "First message from AWS Ecs sii";
     }
 
     @GetMapping("/message")
