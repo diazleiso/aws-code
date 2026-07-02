@@ -1,6 +1,11 @@
-FROM eclipse-temurin:17-jdk-alpine
-RUN apk add curl
+# Imagen base oficial de AWS sobre Alpine (Evita el bloqueo de límites de Docker Hub)
+FROM public.ecr.aws/amazoncorretto/amazoncorretto:17-alpine
+
+RUN apk add --no-cache curl
 VOLUME /tmp
 EXPOSE 8080
-ADD target/springboot-aws-deploy-service.jar springboot-aws-deploy-service.jar
-ENTRYPOINT ["java","-jar","/springboot-aws-deploy-service.jar"]
+
+# Nombre unificado con el buildspec.yml
+ADD target/springboot-aws-deploy.jar springboot-aws-deploy.jar
+
+ENTRYPOINT ["java","-jar","/springboot-aws-deploy.jar"]
