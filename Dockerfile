@@ -6,6 +6,7 @@ RUN yum install -y curl && yum clean all
 VOLUME /tmp
 EXPOSE 8080
 
+
 # Nombre unificado con el buildspec.yml
 ADD target/springboot-aws-deploy.jar springboot-aws-deploy.jar
 ENTRYPOINT ["java","-jar","/springboot-aws-deploy.jar"]
