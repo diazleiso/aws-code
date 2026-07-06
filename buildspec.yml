@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     REPOSITORY_URI: "846869029012.dkr.ecr.us-east-1.amazonaws.com/spring-prueba-ecr-prueba"
-    DOCKER_CONTAINER_NAME: "spring-demo-ecr"
+    DOCKER_CONTAINER_NAME: "spring-prueba-ecr-prueba"
 
 phases:
   pre_build:
@@ -11,7 +11,6 @@ phases:
       - echo Logging in to Amazon ECR....
       - aws --version
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 846869029012.dkr.ecr.us-east-1.amazonaws.com
-      # Las variables dinámicas sí se declaran dentro de commands pero exportándolas:
       - export IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
   build:
     commands:
