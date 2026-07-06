@@ -1,14 +1,18 @@
 version: 0.2
+
+env:
+  variables:
+    REPOSITORY_URI: "846869029012.dkr.ecr.us-east-1.amazonaws.com/spring-prueba-ecr-prueba"
+    DOCKER_CONTAINER_NAME: "spring-demo-ecr"
+
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR....
       - aws --version
-      #- $(aws ecr get-login --region ap-south-1 --no-include-email)
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 846869029012.dkr.ecr.us-east-1.amazonaws.com
-      - # Replace with this to your repository URI
-      - REPOSITORY_URI=846869029012.dkr.ecr.us-east-1.amazonaws.com/spring-prueba-ecr-prueba
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      # Las variables dinámicas sí se declaran dentro de commands pero exportándolas:
+      - export IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
   build:
     commands:
       - echo Build started on `date`
@@ -24,8 +28,6 @@ phases:
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      # Give your container name
-      - DOCKER_CONTAINER_NAME=spring-demo-ecr
       - printf '[{"name":"%s","imageUri":"%s"}]' $DOCKER_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - echo $DOCKER_CONTAINER_NAME
       - echo printing imagedefinitions.json
