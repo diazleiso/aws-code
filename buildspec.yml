@@ -1,13 +1,12 @@
 version: 0.2
-
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR....
       - aws --version
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 846869029012.dkr.ecr.us-east-1.amazonaws.com
+      - REGISTRY_HOST=$(echo $REPOSITORY_URL | cut -d'/' -f1)
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REGISTRY_HOST
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
-
   build:
     commands:
       - echo Build started on `date`
@@ -16,14 +15,12 @@ phases:
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URL:latest .
       - docker tag $REPOSITORY_URL:latest $REPOSITORY_URL:$IMAGE_TAG
-
   post_build:
     commands:
       - echo Build completed on `date`
       - echo pushing to repo
       - docker push $REPOSITORY_URL:latest
       - docker push $REPOSITORY_URL:$IMAGE_TAG
-
       # --- Registrar nueva Task Definition con la imagen recien pusheada ---
       - echo Descargando la Task Definition activa de $TASK_FAMILY...
       - aws ecs describe-task-definition --task-definition $TASK_FAMILY --query 'taskDefinition' --output json > current-taskdef.json
@@ -35,7 +32,6 @@ phases:
       - cat taskdef.json
       - NEW_TASKDEF_ARN=$(aws ecs register-task-definition --cli-input-json file://taskdef.json --query 'taskDefinition.taskDefinitionArn' --output text)
       - echo Task Definition registrada -> $NEW_TASKDEF_ARN
-
       # --- Generar el appspec que le dice a CodeDeploy que Task Definition usar ---
       - |
         jq -n \
@@ -61,7 +57,6 @@ phases:
           }' > appspec.json
       - echo appspec.json generado-
       - cat appspec.json
-
       # --- Disparar el deployment blue/green ---
       # AppSpecContent.content es un STRING que contiene el JSON del appspec
       # (no el JSON embebido directo), por eso el "tostring" al armar el
@@ -87,11 +82,9 @@ phases:
       - DEPLOYMENT_ID=$(aws deploy create-deployment --cli-input-json file://deployment-input.json --query 'deploymentId' --output text)
       - echo Deployment creado -> $DEPLOYMENT_ID
       - echo "Sigue el progreso con- aws deploy get-deployment --deployment-id $DEPLOYMENT_ID"
-
       - echo Writing image definitions file...
       - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URL:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
-
 artifacts:
   files:
     - imagedefinitions.json
